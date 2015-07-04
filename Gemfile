@@ -5,6 +5,8 @@ gem 'pg'
 gem 'turbolinks'
 gem 'jbuilder', '~> 2.0'
 gem 'geocoder'
+gem 'sass-rails'
+gem 'uglifier'
 
 group :development, :test do
   gem 'byebug'
