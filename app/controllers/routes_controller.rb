@@ -11,7 +11,7 @@ class RoutesController < ApplicationController
     all_flights = flight_options(origin.close_by_airport_codes, destination.close_by_airport_codes, departure_time)
 
     # handle each origin airport differently
-    @routes = origin.close_by_airport_codes.map do |departure_airport_code|
+    @routes = origin.close_by_airport_codes.map { |departure_airport_code|
       # find time it takes to get to the origin airport
       time_and_distance_to_airport = drive_time_and_distance(origin.address,
                                                              "#{departure_airport_code} Airport",
@@ -20,96 +20,91 @@ class RoutesController < ApplicationController
       time_to_airport = time_and_distance_to_airport[:time]
 
       time_to_check_in = 45.minutes
+      time_to_get_luggage = pieces_of_luggage > 0 ? 20.minutes : 5.minutes
 
       # filter flights by that airport
       flights = flights_by_airport(all_flights, departure_airport_code)
       flights = flights_after(flights, departure_time + time_to_airport)
 
-      # check if there are any flights
-      if flights.count == 0
-        continue
-      end
+      flights[0..2].collect { |flight|
+        if departure_airport_code.upcase != flight['Flights'][0]['org'].upcase
+          raise "expected departure airport #{departure_airport_code}, but got #{flight['org']}"
+        end
 
-      # find first flight that day
-      best_flight = flights[0]
-      if departure_airport_code.upcase != best_flight['Flights'][0]['org'].upcase
-        raise "expected departure airport #{departure_airport_code}, but got #{best_flight['org']}"
-      end
+        arrival_airport_code = flight['Flights'][-1]['dst'].upcase
+        flight_departure_time = DateTime.parse(flight['Flights'][0]['dep'] + ' CEST')
+        flight_arrival_time = DateTime.parse(flight['Flights'][-1]['arr'] + ' CEST')
+        flight_price = flight['Price']['Total']['sum']
+        number_of_connections = flight['Flights'].count
 
-      arrival_airport_code = best_flight['Flights'][-1]['dst'].upcase
-      flight_departure_time = DateTime.parse(best_flight['Flights'][0]['dep'] + ' CEST')
-      flight_arrival_time = DateTime.parse(best_flight['Flights'][-1]['arr'] + ' CEST')
-      flight_price = best_flight['Price']['Total']['sum']
-      number_of_connections = best_flight['Flights'].count
+        # TODO: we need to find the latest ride TO the airport
+        time_and_distance_to_airport = drive_time_and_distance(origin.address,
+                                                               "#{departure_airport_code} Airport",
+                                                               flight_departure_time - time_to_check_in,
+                                                               'arrival')
+        time_to_airport = time_and_distance_to_airport[:time]
+        price_to_airport = berlin_taxi_fare(time_and_distance_to_airport[:distance])
 
-      # TODO: we need to find the latest ride TO the airport
-      time_and_distance_to_airport = drive_time_and_distance(origin.address,
-                                                             "#{departure_airport_code} Airport",
-                                                             flight_departure_time - time_to_check_in,
-                                                             'arrival')
-      time_to_airport = time_and_distance_to_airport[:time]
-      price_to_airport = berlin_taxi_fare(time_and_distance_to_airport[:distance])
+        # let's find the first right from the arrival airport
+        time_and_distance_to_destination = drive_time_and_distance("#{arrival_airport_code} Airport",
+                                                                   destination.address,
+                                                                   flight_arrival_time + time_to_get_luggage,
+                                                                   'departure')
+        time_to_destination = time_and_distance_to_destination[:time]
+        price_to_destination = berlin_taxi_fare(time_and_distance_to_destination[:distance])
 
-      # let's find the first right from the arrival airport
-      time_to_get_luggage = pieces_of_luggage > 0 ? 20.minutes : 5.minutes
-      time_and_distance_to_destination = drive_time_and_distance("#{arrival_airport_code} Airport",
-                                                                 destination.address,
-                                                                 flight_arrival_time + time_to_get_luggage,
-                                                                 'departure')
-      time_to_destination = time_and_distance_to_destination[:time]
-      price_to_destination = berlin_taxi_fare(time_and_distance_to_destination[:distance])
+        # let's find the total price
+        route_total_price = price_to_airport + flight_price + price_to_destination
+        route_departure_time = flight_departure_time - time_to_check_in - time_to_airport
+        route_arrival_time = flight_arrival_time + time_to_get_luggage + time_to_destination
 
-      # let's find the total price
-      route_total_price = price_to_airport + flight_price + price_to_destination
-      route_departure_time = flight_departure_time - time_to_check_in - time_to_airport
-      route_arrival_time = flight_arrival_time + time_to_get_luggage + time_to_destination
-
-      # let's assemble a list of steps. Like Car, Flight, Flight, Car
-      steps = []
-      steps << {
-        type: 'drive',
-        from: origin.address,
-        from_type: 'address',
-        to: departure_airport_code,
-        to_type: 'airport',
-        departure_time: route_departure_time,
-        arrival_time: route_departure_time + time_to_airport
-      }
-
-      best_flight['Flights'].each do |flight|
+        # let's assemble a list of steps. Like Car, Flight, Flight, Car
+        steps = []
         steps << {
-          type: 'flight',
-          from: flight['org'].upcase,
-          from_type: 'airport',
-          to: flight['dst'].upcase,
+          type: 'drive',
+          from: origin.address,
+          from_type: 'address',
+          to: departure_airport_code,
           to_type: 'airport',
-          departure_time: DateTime.parse(flight['dep'] + ' CEST'),
-          arrival_time: DateTime.parse(flight['arr'] + ' CEST')
+          departure_time: route_departure_time,
+          arrival_time: route_departure_time + time_to_airport
         }
-      end
 
-      steps << {
-        type: 'drive',
-        from: arrival_airport_code,
-        from_type: 'airport',
-        to: destination.address,
-        to_type: 'address',
-        departure_time: flight_arrival_time + time_to_get_luggage,
-        arrival_time: route_arrival_time
-      }
+        flight['Flights'].each do |flight_connection|
+          steps << {
+            type: 'flight',
+            from: flight_connection['org'].upcase,
+            from_type: 'airport',
+            to: flight_connection['dst'].upcase,
+            to_type: 'airport',
+            departure_time: DateTime.parse(flight_connection['dep'] + ' CEST'),
+            arrival_time: DateTime.parse(flight_connection['arr'] + ' CEST')
+          }
+        end
 
-      {
-        price: {
-          total: route_total_price,
-          to_airport: price_to_airport,
-          flight: flight_price,
-          to_destination: price_to_destination
-        },
-        departure_time: route_departure_time,
-        arrival_time: route_arrival_time,
-        steps: steps
+        steps << {
+          type: 'drive',
+          from: arrival_airport_code,
+          from_type: 'airport',
+          to: destination.address,
+          to_type: 'address',
+          departure_time: flight_arrival_time + time_to_get_luggage,
+          arrival_time: route_arrival_time
+        }
+
+        {
+          price: {
+            total: route_total_price,
+            to_airport: price_to_airport,
+            flight: flight_price,
+            to_destination: price_to_destination
+          },
+          departure_time: route_departure_time,
+          arrival_time: route_arrival_time,
+          steps: steps
+        }
       }
-    end
+    }.flatten
 
     # TODO: make sure we remove empty results from the final list
   end
