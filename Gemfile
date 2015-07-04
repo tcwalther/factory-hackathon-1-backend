@@ -1,3 +1,4 @@
+ruby '2.2.0'
 source 'https://rubygems.org'
 
 gem 'rails', '4.2.1.rc2'
@@ -7,6 +8,7 @@ gem 'jbuilder', '~> 2.0'
 gem 'geocoder'
 gem 'sass-rails'
 gem 'uglifier'
+gem 'rails_12factor'
 
 group :development, :test do
   gem 'byebug'
