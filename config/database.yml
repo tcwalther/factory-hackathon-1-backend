@@ -84,3 +84,4 @@ production:
   <<: *default
   database: HackathonBackend_production
   url: <%= ENV['DATABASE_URL'] %>
+  pool: <%= ENV['MAX_THREADS'] || 5 %>
