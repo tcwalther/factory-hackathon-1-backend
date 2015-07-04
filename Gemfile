@@ -19,3 +19,5 @@ end
 gem 'tzinfo-data', platforms: [:mingw, :mswin]
 
 gem 'typhoeus'
+
+gem 'puma'
