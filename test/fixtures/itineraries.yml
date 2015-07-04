@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  origin_full_street_address: MyString
+  destination_full_street_address: MyString
+  departure_airport: MyString
+  arrival_airport: MyString
+  flight_number: MyString
+
+two:
+  origin_full_street_address: MyString
+  destination_full_street_address: MyString
+  departure_airport: MyString
+  arrival_airport: MyString
+  flight_number: MyString

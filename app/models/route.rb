@@ -1,0 +1,7 @@
+class Route < ActiveRecord::Base
+  belongs_to :user
+  has_many :steps
+
+  validates :price_cents, presence: true
+  validates :currency, presence: true
+end

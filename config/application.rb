@@ -22,5 +22,10 @@ module Backend
 
     # Do not swallow errors in after_commit/after_rollback callbacks.
     config.active_record.raise_in_transactional_callbacks = true
+
+    ::LH_API_CLIENT_ID = Rails.application.secrets.lh_api_client_id
+    ::LH_API_CLIENT_SECRET = Rails.application.secrets.lh_api_client_secret
+    ::GOOGLE_DIRECTIONS_API_KEY = Rails.application.secrets.google_directions_api_key
+    ::GOOGLE_DISTANCE_MATRIX_API_KEY = Rails.aplications.secrets.google_distance_matrix_api_key
   end
 end
