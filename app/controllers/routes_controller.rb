@@ -32,8 +32,8 @@ class RoutesController < ApplicationController
         end
 
         arrival_airport_code = flight['Flights'][-1]['dst'].upcase
-        flight_departure_time = DateTime.parse(flight['Flights'][0]['dep'] + ' CEST')
-        flight_arrival_time = DateTime.parse(flight['Flights'][-1]['arr'] + ' CEST')
+        flight_departure_time = time_at_airport(flight['Flights'][0]['dep'], departure_airport_code)
+        flight_arrival_time = time_at_airport(flight['Flights'][-1]['arr'], arrival_airport_code)
         flight_price = flight['Price']['Total']['sum']
         number_of_connections = flight['Flights'].count
 
@@ -77,8 +77,8 @@ class RoutesController < ApplicationController
             from_type: 'airport',
             to: flight_connection['dst'].upcase,
             to_type: 'airport',
-            departure_time: DateTime.parse(flight_connection['dep'] + ' CEST'),
-            arrival_time: DateTime.parse(flight_connection['arr'] + ' CEST')
+            departure_time: time_at_airport(flight_connection['dep'], flight_connection['org']),
+            arrival_time: time_at_airport(flight_connection['arr'], flight_connection['dst'])
           }
         end
 
@@ -174,6 +174,10 @@ class RoutesController < ApplicationController
       time: json['rows'][0]['elements'][0]['duration']['value'].seconds,
       distance: json['rows'][0]['elements'][0]['distance']['value'] / 1000
     }
+  end
+
+  def time_at_airport(time_string, airport_code)
+    DateTime.parse("#{time_string} #{AIRPORT_TIMEZONES[airport_code.upcase.to_sym]}")
   end
 
   def search_params
