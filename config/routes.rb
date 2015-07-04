@@ -1,7 +1,5 @@
 Rails.application.routes.draw do
-  get 'routes/show'
-  get 'connections/show'
-  get 'routes_controller/show'
+  resources :routes, only: [:index]
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 

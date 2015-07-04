@@ -26,6 +26,9 @@ module Backend
     ::LH_API_CLIENT_ID = Rails.application.secrets.lh_api_client_id
     ::LH_API_CLIENT_SECRET = Rails.application.secrets.lh_api_client_secret
     ::GOOGLE_DIRECTIONS_API_KEY = Rails.application.secrets.google_directions_api_key
-    ::GOOGLE_DISTANCE_MATRIX_API_KEY = Rails.aplications.secrets.google_distance_matrix_api_key
+    ::GOOGLE_DISTANCE_MATRIX_API_KEY = Rails.application.secrets.google_distance_matrix_api_key
+    ::VAYANT_USER = Rails.application.secrets.vayant_user
+    ::VAYANT_PASSWORD = Rails.application.secrets.vayant_password
+    ::VAYANT_ENVIRONMENT = Rails.application.secrets.vayant_environment
   end
 end

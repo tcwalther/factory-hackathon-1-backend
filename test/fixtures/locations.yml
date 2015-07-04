@@ -1,0 +1,19 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  type: 
+  time: 2015-07-03 21:41:18
+  address: MyString
+  airport: MyString
+  gate: MyString
+  latitude: 1.5
+  longitude: 1.5
+
+two:
+  type: 
+  time: 2015-07-03 21:41:18
+  address: MyString
+  airport: MyString
+  gate: MyString
+  latitude: 1.5
+  longitude: 1.5

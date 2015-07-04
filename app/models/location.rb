@@ -19,12 +19,12 @@ class Location < ActiveRecord::Base
 
   def close_by_city_codes
     close_by_airports.collect { |airport|
-      airport['CityCode']
+      airport['CityCode'].upcase
     }.uniq
   end
 
   def close_by_airport_codes
-    close_by_airports.collect { |airport| airport['AirportCode'] }
+    close_by_airports.collect { |airport| airport['AirportCode'].upcase }
   end
 
   def close_by_airports

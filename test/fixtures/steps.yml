@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  route_id: 
+  type: 
+  departure_id: 1
+  arrival_id: 1
+
+two:
+  route_id: 
+  type: 
+  departure_id: 1
+  arrival_id: 1

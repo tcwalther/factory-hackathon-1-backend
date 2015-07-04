@@ -1,0 +1,127 @@
+HTTP Status Codes:
+
+401 when user_token is invalid
+400 for bad request
+500 for internal server error
+404 for wrong route
+
+
+Request:
+
+Header: user_token='Hk1237ASDHjk1236X4a9A'
+
+GET /routes/
+
+params:
+
+  origin_address: string, like "Rheinsberger Str. 77, 10113 Berlin"
+  destination_address: string, like "Buckingham Palance, London"
+  time: ISO-8601 (unix timestamp) like "2015-07-03T20:37"
+  time_type: string, either "arrival" or "departure"
+
+example response:
+
+{
+  routes: [
+    {
+      id: 415,
+      price_cents: 12900,
+      currency: "EUR",
+      route: [
+        {
+          type: "Drive",
+          departure: {
+            type: "address",
+            time: "2015-07-03T16:12 UTC",
+            address: "Rheinsberger Str. 77, 10113 Berlin"
+          },
+          arrival: {
+            type: "airport",
+            time: "2015-07-03T16:43 UTC",
+            airport: "TXL",
+            gate: 2
+          }
+        },
+        {
+          type: "Flight",
+          airline: "Lufthansa",
+          flight_number: "LH1337",
+          departure: {
+            type: "address",
+            time: "2015-07-03T17:00 UTC",
+            address: "TXL",
+            gate: 2
+          },
+          arrival: {
+            type: "airport",
+            time: "2015-07-03T19:05 UTC",
+            address: "LHR"
+            gate: 1
+          }
+        },
+        {
+          type: "Uber",
+          departure: {
+            type: "airport",
+            time: "2015-07-03T19:05 UTC",
+            address: "LHR"
+            gate: 1,
+          }
+          arrival: {
+            type: "address",
+            time: "2015-07-03T20:31 UTC",
+            address: "Buckingham Palance, London"
+          }
+        }
+      ]
+    },
+    {
+      id: 416,
+      route: [...]
+    }   
+  ]
+}
+
+
+Request:
+
+Header: user_token='Hk1237ASDHjk1236X4a9A'
+
+POST /buy/415
+
+example response:
+
+{
+  id: 415,
+  price_cents: 12900,
+  currency: "EUR",
+  route: [
+    {
+      type: "Uber",
+      departure_time: "2015-07-03T16:12 UTC",
+      departure_address: "Rheinsberger Str. 77, 10113 Berlin"
+      arrival_time: "2015-07-03T16:43 UTC",
+      arrival_address: "TXL",
+      arrival_gate: 2
+    },
+    {
+      type: "Airplane",
+      airline: "Lufthansa",
+      flight_number: "LH1337",
+      departure_gate: 2,
+      departure_time: "2015-07-03T17:00 UTC",
+      departure_address: "TXL"
+      arrival_time: "2015-07-03T19:05 UTC",
+      arrival_address: "LHR"
+      arrival_gate: 1
+    },
+    {
+      type: "Uber",
+      departure_time: "2015-07-03T19:05 UTC",
+      departure_address: "LHR"
+      departure_gate: 1,
+      arrival_time: "2015-07-03T20:31 UTC",
+      arrival_address: "Buckingham Palance, London"
+    }
+  ]
+}
